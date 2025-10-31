@@ -299,10 +299,9 @@ Examples:
 
 ### Detection Logic
 
-1. Check `NO_COLOR` environment variable (disable if set)
-2. Check `--color` flag: `always`, `never`, `auto`
-3. Auto mode: detect if stdout is a terminal using `term.IsTerminal()`
-4. Disable colors when piped or redirected
+1. Check `--color` flag: `always`, `never`, `auto`
+2. Auto mode: detect if stdout is a terminal using `term.IsTerminal()`
+3. Disable colors when piped or redirected
 
 ### Color Usage
 
@@ -397,7 +396,7 @@ Examples:
 **Solution:** Increase timeout: `kagi --timeout 60 "your query"`
 
 **Issue:** Colors broken in output
-**Solution:** Use `--color never` or set `NO_COLOR=1`
+**Solution:** Use `--color never`
 
 ### Development Issues
 
