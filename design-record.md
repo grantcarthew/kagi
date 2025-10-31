@@ -814,10 +814,15 @@ These features were explicitly considered and rejected to maintain simplicity:
 
 ### Testing Strategy
 
-- Unit tests for formatting functions
+Following KISS principles, tests are written after core implementation is complete (see PROJECT.md Phase 7):
+
+- Unit tests for all packages (api, config, format, input)
 - Integration tests with mock API responses
-- Error case coverage
+- Error case coverage for all 11 error scenarios
 - Flag parsing validation
+- Manual testing during implementation (Phases 1-6)
+- Comprehensive automated testing in Phase 7
+- Target: >80% test coverage
 
 ### Documentation Requirements
 
