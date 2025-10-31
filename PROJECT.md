@@ -227,15 +227,16 @@ kagi/
   - [ ] Parse error response
   - [ ] Handle HTTP errors
   - [ ] Handle network errors
-- [ ] Write unit tests (`internal/api/client_test.go`)
-  - [ ] Test successful API call (mock)
-  - [ ] Test API error response
-  - [ ] Test HTTP error (404, 500)
-  - [ ] Test timeout
-  - [ ] Test invalid JSON response
-  - [ ] Test network failure
 
-**Deliverable:** Fully tested API client package.
+**Manual Testing:**
+- Test with real Kagi API key
+- Verify successful query returns data
+- Test timeout behavior
+- Test error responses (invalid key, etc.)
+
+**Deliverable:** Working API client package.
+
+**Note:** Unit tests will be written in Phase 7 after core implementation is complete.
 
 ---
 
@@ -248,6 +249,7 @@ kagi/
 - [ ] Set up Cobra root command (`cmd/root.go`)
   - [ ] Define command description
   - [ ] Configure flag parsing (allow args anywhere)
+  - [ ] Define version constant (e.g., `const version = "1.0.0"`)
 - [ ] Add flags with validation
   - [ ] `--help, -h` (built-in)
   - [ ] `--version, -v` with version output
@@ -269,12 +271,17 @@ kagi/
   - [ ] Read from stdin if no args
   - [ ] Validate query not empty
   - [ ] Trim whitespace
-- [ ] Write tests
-  - [ ] Config precedence tests
-  - [ ] Query parsing tests (args, stdin, both)
-  - [ ] Validation tests
+
+**Manual Testing:**
+- Test all flags: `go run . --help`, `go run . --version`
+- Test query parsing: `go run . test query`, `go run . "quoted query"`
+- Test stdin: `echo "test" | go run .`
+- Test config precedence: `KAGI_API_KEY=env go run . --api-key flag test`
+- Test validation: missing API key, empty query, invalid flag values
 
 **Deliverable:** CLI accepting all flags and parsing queries correctly.
+
+**Note:** Unit tests will be written in Phase 7 after core implementation is complete.
 
 ---
 
@@ -305,15 +312,19 @@ kagi/
   - [ ] Text: just output body
   - [ ] Markdown: just output body
   - [ ] JSON: just `.data.output` as JSON string
-- [ ] Write tests
-  - [ ] Test each format with sample data
-  - [ ] Test color application
-  - [ ] Test quiet mode
-  - [ ] Test heading flag
-  - [ ] Test empty references
-  - [ ] Test TTY detection
+
+**Manual Testing:**
+- Test text format: `go run . test query`
+- Test markdown: `go run . -f md test query`
+- Test JSON: `go run . -f json test query`
+- Test heading: `go run . --heading test query`
+- Test quiet: `go run . -q test query`
+- Test colors in terminal vs pipe: `go run . test | cat` (no color)
+- Test color flags: `--color always`, `--color never`
 
 **Deliverable:** Complete output formatting for all modes.
+
+**Note:** Unit tests will be written in Phase 7 after core implementation is complete.
 
 ---
 
@@ -347,13 +358,18 @@ kagi/
 - [ ] Handle signals
   - [ ] Graceful SIGINT (Ctrl+C) handling
   - [ ] Cleanup on exit
-- [ ] Write tests
-  - [ ] Test each error scenario
-  - [ ] Test exit codes
-  - [ ] Test error messages
-  - [ ] Test verbose/debug output
+
+**Manual Testing:**
+- Test each error scenario from design-record.md
+- Test `--verbose` output
+- Test `--debug` output
+- Test Ctrl+C handling
+- Verify error messages go to stderr: `go run . 2>&1 | grep Error`
+- Verify exit codes: `go run . invalid; echo $?`
 
 **Deliverable:** Robust error handling with clear user feedback.
+
+**Note:** Unit tests will be written in Phase 7 after core implementation is complete.
 
 ---
 
@@ -378,55 +394,98 @@ kagi/
 - [ ] Implement main.go entry point
   - [ ] Execute root command
   - [ ] Exit with proper code
-- [ ] Write integration tests
-  - [ ] End-to-end success flow
-  - [ ] Various flag combinations
-  - [ ] Error scenarios
-- [ ] Manual testing
-  - [ ] Test all flag combinations
-  - [ ] Test with real Kagi API
-  - [ ] Test piping and redirects
-  - [ ] Test on different terminals
+
+**Manual Testing:**
+- [ ] Test all flag combinations
+- [ ] Test with real Kagi API
+- [ ] Test piping: `go run . test | less`
+- [ ] Test redirects: `go run . test > output.txt`
+- [ ] Test stdin: `echo "query" | go run .`
+- [ ] Test version: `go run . --version`, `go run . -v -q`
+- [ ] Test in different terminals (iTerm, Terminal.app, etc.)
+- [ ] Test color auto-detection
 
 **Deliverable:** Fully functional CLI tool.
+
+**Note:** Comprehensive tests will be written in Phase 7.
 
 ---
 
 ### Phase 7: Testing
 
-**Objective:** Achieve comprehensive test coverage.
+**Objective:** Achieve comprehensive test coverage after core implementation is complete.
+
+**Why After Implementation:**
+Following KISS principles, we write tests after the core is working to:
+- Focus on implementation without context switching
+- Understand the full system before testing it
+- Avoid testing code that might change during development
+- Write better tests with complete understanding of edge cases
 
 **Tasks:**
 
-- [ ] Write unit tests for all packages
-  - [ ] `internal/api` package tests
-  - [ ] `internal/config` package tests
-  - [ ] `internal/format` package tests
-  - [ ] `internal/input` package tests
+- [ ] Write unit tests for all packages (`*_test.go` files)
+  - [ ] `internal/api/client_test.go`
+    - [ ] Successful API calls (mocked HTTP)
+    - [ ] API error responses
+    - [ ] HTTP errors (404, 500, etc.)
+    - [ ] Timeout handling
+    - [ ] Invalid JSON responses
+    - [ ] Network failures
+  - [ ] `internal/config/config_test.go`
+    - [ ] Configuration precedence (flags > env > defaults)
+    - [ ] API key validation
+    - [ ] Flag value validation
+  - [ ] `internal/format/output_test.go`
+    - [ ] Text format (with/without heading, quiet)
+    - [ ] Markdown format (with/without quiet)
+    - [ ] JSON format (with/without quiet)
+    - [ ] Color application
+    - [ ] TTY detection
+    - [ ] Reference formatting
+    - [ ] Empty references handling
+  - [ ] `internal/input/query_test.go`
+    - [ ] Argument concatenation
+    - [ ] Stdin reading
+    - [ ] Args + stdin precedence
+    - [ ] Empty query validation
+    - [ ] Whitespace handling
+
 - [ ] Write integration tests
-  - [ ] Mock API server for testing
+  - [ ] Mock API server for end-to-end testing
   - [ ] Test complete execution flows
-  - [ ] Test flag interactions
+  - [ ] Test all flag combinations
+  - [ ] Test configuration precedence
+  - [ ] Test error scenarios
+
 - [ ] Test edge cases
-  - [ ] Empty responses
-  - [ ] Missing references
-  - [ ] Very long queries
+  - [ ] Empty API responses
+  - [ ] Missing references in response
+  - [ ] Very long queries (>1000 chars)
   - [ ] Special characters in query
-  - [ ] Unicode in output
+  - [ ] Unicode in query and output
+  - [ ] Multiple spaces in query args
+
 - [ ] Test error conditions
-  - [ ] Network failures
-  - [ ] Timeouts
-  - [ ] Invalid JSON
-  - [ ] API errors
+  - [ ] All 11 error scenarios from design-record.md
+  - [ ] Verify error messages match spec
+  - [ ] Verify exit codes (0, 1, 2, 130)
+  - [ ] Verify stderr output
+
 - [ ] Verify test coverage
   - [ ] Run `go test -cover ./...`
   - [ ] Aim for >80% coverage
-- [ ] Test on multiple platforms
-  - [ ] macOS
-  - [ ] Linux
-  - [ ] Windows (if possible)
+  - [ ] Identify untested paths
+  - [ ] Add tests for gaps
 
-**Deliverable:** >80% test coverage with passing tests.
+- [ ] Test on multiple platforms (if possible)
+  - [ ] macOS (primary development platform)
+  - [ ] Linux (via Docker or CI)
+  - [ ] Windows (if accessible)
+
+**Deliverable:** >80% test coverage with all tests passing.
+
+**Note:** This completes the core implementation. Phases 8-9 cover documentation and distribution.
 
 ---
 
@@ -500,7 +559,30 @@ kagi/
 
 ## Testing Strategy
 
-### Unit Tests
+### Approach: Build First, Test After
+
+Following KISS principles, testing is done in Phase 7 after core implementation (Phases 1-6) is complete.
+
+**Why This Approach:**
+
+- **Focus:** Build features without context-switching to test writing
+- **Understanding:** Better tests when you understand the complete system
+- **Efficiency:** Avoid testing code that changes during implementation
+- **Simplicity:** No test infrastructure to maintain during development
+
+### During Implementation (Phases 1-6)
+
+**Manual testing only:**
+
+- Use `go run . <args>` to verify features work
+- Test with real Kagi API key
+- Check error scenarios manually
+- Verify output formats in terminal
+- No `*_test.go` files created yet
+
+### After Implementation (Phase 7)
+
+#### Unit Tests
 
 **Location:** `*_test.go` files alongside implementation
 **Command:** `go test ./...`
@@ -511,26 +593,34 @@ kagi/
 - Test all public functions
 - Test error conditions
 - Test edge cases
-- Mock external dependencies (API calls)
+- Mock external dependencies (HTTP/API calls)
 - Aim for >80% coverage
 
-### Integration Tests
+**Packages to test:**
+
+- `internal/api` - API client with mocked HTTP
+- `internal/config` - Configuration precedence and validation
+- `internal/format` - Output formatting for all formats
+- `internal/input` - Query parsing from args and stdin
+
+#### Integration Tests
 
 **Location:** `cmd/root_test.go` or separate `integration_test.go`
-**Approach:** Test complete execution flows with mocked API
+**Approach:** End-to-end testing with mocked API
 
 **Scenarios:**
 
-- Successful query with various flags
-- Error handling flows
-- Output format validation
-- Configuration precedence
+- Successful query with various flag combinations
+- Error handling for all 11 error scenarios
+- Output format validation (text, markdown, JSON)
+- Configuration precedence (flags > env > defaults)
+- Exit codes (0, 1, 2, 130)
 
-### Manual Testing
+#### Manual Testing Checklist
 
 **Environment:** Real terminal with Kagi API key
 
-**Checklist:**
+**Final verification before release:**
 
 - [ ] Basic query: `kagi golang best practices`
 - [ ] All formats: text, markdown, JSON
@@ -615,8 +705,9 @@ kagi/
 1. **Update version references**
 
    ```bash
-   # Update version in code if hardcoded
-   # Usually in cmd/root.go or version.go
+   # Update version constant in cmd/root.go
+   # Change: const version = "1.0.0"
+   # To:     const version = "1.1.0"
    ```
 
 2. **Create annotated tag**
@@ -692,11 +783,14 @@ git checkout -b feature/api-client
 # Make changes
 # ... code ...
 
-# Run tests
-go test ./...
-
 # Format code
 gofmt -w .
+
+# Run manual tests during Phases 1-6
+go run . test query
+
+# Run automated tests (Phase 7+ only)
+go test ./...
 
 # Commit
 git add .
@@ -799,16 +893,18 @@ go test -run TestName  # Run specific test
 ## Timeline Estimate
 
 **Phase 1:** 1-2 hours (setup)
-**Phase 2:** 4-6 hours (API client + tests)
-**Phase 3:** 4-6 hours (CLI framework + flags)
-**Phase 4:** 4-6 hours (output formatting)
-**Phase 5:** 3-4 hours (error handling)
+**Phase 2:** 3-4 hours (API client)
+**Phase 3:** 3-4 hours (CLI framework & flags)
+**Phase 4:** 3-4 hours (output formatting)
+**Phase 5:** 2-3 hours (error handling)
 **Phase 6:** 2-3 hours (integration)
-**Phase 7:** 4-6 hours (comprehensive testing)
+**Phase 7:** 6-8 hours (comprehensive testing - all tests written here)
 **Phase 8:** 3-4 hours (documentation)
 **Phase 9:** 2-3 hours (distribution setup)
 
-**Total: ~27-40 hours** (3-5 days of focused work)
+**Total: ~25-35 hours** (3-4 days of focused work)
+
+**Note:** Testing is concentrated in Phase 7 following the KISS approach - build first, test after.
 
 ---
 
