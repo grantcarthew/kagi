@@ -14,9 +14,10 @@ A fast, simple command-line interface for [Kagi FastGPT](https://kagi.com/fastgp
 
 ## Installation
 
-### Homebrew (macOS/Linux)
+### Homebrew (Linux/macOS)
 
 ```bash
+brew tap grantcarthew/tap
 brew install grantcarthew/tap/kagi
 ```
 
@@ -82,20 +83,13 @@ kagi "explain docker containers"
 Clean, readable output with numbered references:
 
 ```bash
-kagi golang generics
-```
-
-Output:
-
-```
-Docker containers are lightweight, standalone executable packages...
+$ kagi what is open source
+**Open source** refers to software with source code that is freely available for anyone to inspect, modify, and enhance 【1】. With open source software (OSS), users may view, modify, adopt, and share the source code 【2】. Open source emphasizes collaboration and transparency, allowing users to view, modify, and share the software 【1】.
 
 References:
-  1. What are Containers? - https://www.docker.com/resources/what-container
-     Docker containers are a standardized unit of software that packages...
 
-  2. Container Technology - https://kubernetes.io/docs/concepts/containers/
-     Containers decouple applications from underlying host infrastructure...
+1. What is open source? - https://opensource.com/resources/what-open-source - Open source software is software with source code that anyone can inspect, modify, and enhance. "Source code" is the part of software that most computer users ...
+2. What is Open Source Software (OSS)? - https://github.com/resources/articles/what-is-open-source-software - Open source software (OSS) refers to software that features freely available source code, which users may view, modify, adopt, and share for ...
 ```
 
 #### Markdown Format
@@ -103,25 +97,17 @@ References:
 Perfect for documentation or README files:
 
 ```bash
-kagi -f md golang generics > generics-guide.md
-kagi -f markdown how to use rust > rust-guide.md
-```
+$ kagi --format md what is open source
+# what is open source
 
-Output includes markdown links and blockquotes:
-
-```markdown
-# golang generics
-
-Go generics allow you to write flexible, reusable code...
+**Open source** refers to software with source code that is freely available for anyone to inspect, modify, and enhance 【1】. With open source software (OSS), users may view, modify, adopt, and share the source code 【2】. Open source emphasizes collaboration and transparency, allowing users to view, modify, and share the software 【1】.
 
 ## References
 
-1. [Go Generics Tutorial](https://go.dev/doc/tutorial/generics)
-
-   > Learn how to add generic functions and types to your Go code...
-
-2. [Type Parameters Proposal](https://go.dev/blog/generics)
-   > The Go team introduces type parameters to the language...
+1. [What is open source?](https://opensource.com/resources/what-open-source)
+   > Open source software is software with source code that anyone can inspect, modify, and enhance. "Source code" is the part of software that most computer users ...
+2. [What is Open Source Software (OSS)?](https://github.com/resources/articles/what-is-open-source-software)
+   > Open source software (OSS) refers to software that features freely available source code, which users may view, modify, adopt, and share for ...
 ```
 
 #### JSON Format
@@ -129,25 +115,26 @@ Go generics allow you to write flexible, reusable code...
 For scripting and automation:
 
 ```bash
-kag -f json golang channels | jq '.data.output'
-```
-
-Full API response:
-
-```json
+$ kagi --format json what is open source
 {
   "meta": {
-    "id": "...",
-    "node": "...",
-    "ms": 1234
+    "id": "d598ad3c4d62f8a1319f999babff2c3e",
+    "node": "australia-southeast1",
+    "ms": 5
   },
   "data": {
-    "output": "Go channels are a typed conduit...",
+    "output": "**Open source** refers to software with source code that is freely available for anyone to inspect, modify, and enhance 【1】. With open source software (OSS), users may view, modify, adopt, and share the source code 【2】. Open source emphasizes collaboration and transparency, allowing users to view, modify, and share the software 【1】.",
+    "tokens": 0,
     "references": [
       {
-        "title": "Go by Example: Channels",
-        "snippet": "Channels are the pipes that connect...",
-        "url": "https://gobyexample.com/channels"
+        "title": "What is open source?",
+        "snippet": "Open source software is software with source code that anyone can inspect, modify, and enhance. \"Source code\" is the part of software that most computer users ...",
+        "url": "https://opensource.com/resources/what-open-source"
+      },
+      {
+        "title": "What is Open Source Software (OSS)?",
+        "snippet": "Open source software (OSS) refers to software that features freely available source code, which users may view, modify, adopt, and share for ...",
+        "url": "https://github.com/resources/articles/what-is-open-source-software"
       }
     ]
   }
@@ -179,10 +166,10 @@ echo "$QUERY" | kagi -f md > comparison.md
 ### Common Options
 
 ```bash
-# Quiet mode (output only, no references)
+# Quiet mode (output body only, no references)
 kagi -q golang channels
 
-# With heading
+# With heading (text format only)
 kagi --heading golang best practices
 
 # Markdown with quiet mode
@@ -246,7 +233,6 @@ fi
 | Variable       | Description                                           |
 | -------------- | ----------------------------------------------------- |
 | `KAGI_API_KEY` | Your Kagi API key (required unless using `--api-key`) |
-| `NO_COLOR`     | Disable color output (standard)                       |
 
 ### Exit Codes
 
@@ -273,8 +259,6 @@ kagi --color always golang patterns | less -R
 # Disable colors
 kagi --color never golang patterns
 ```
-
-Colors are also disabled if the `NO_COLOR` environment variable is set.
 
 ## Error Handling
 
@@ -332,74 +316,13 @@ Use `--debug` for detailed information:
 
 ```bash
 $ kagi --debug golang channels
-API Key: ***
-Query: golang channels
-Format: text
-Timeout: 30s
+Debug: API Key: ***
+Debug: Query: golang channels
+Debug: Format: text
+Debug: Timeout: 30
 Querying Kagi FastGPT API...
-Response received (1234ms)
+Response received (5ms)
 [output...]
-```
-
-## Integration Examples
-
-### Shell Scripts
-
-```bash
-#!/bin/bash
-# ask-kagi.sh - Interactive Kagi queries
-
-if [ -z "$KAGI_API_KEY" ]; then
-  echo "Error: Set KAGI_API_KEY environment variable"
-  exit 1
-fi
-
-while true; do
-  echo -n "Ask Kagi: "
-  read -r query
-  [ -z "$query" ] && break
-
-  kagi "$query"
-  echo ""
-done
-```
-
-### Vim Integration
-
-Add to your `.vimrc`:
-
-```vim
-" Query selected text with Kagi
-vnoremap <leader>k :!kagi -q<CR>
-
-" Query word under cursor
-nnoremap <leader>k :!kagi -q <cword><CR>
-```
-
-### Fish Shell Function
-
-Add to your `~/.config/fish/functions/ask.fish`:
-
-```fish
-function ask --description "Quick Kagi query"
-    kagi $argv
-end
-```
-
-Then use:
-
-```bash
-ask golang channels
-```
-
-### Alfred/Raycast Workflow
-
-```bash
-#!/bin/bash
-# Kagi query for Alfred/Raycast
-query="$1"
-kagi -q "$query" | pbcopy
-echo "Copied to clipboard!"
 ```
 
 ## Troubleshooting
@@ -437,9 +360,6 @@ If colors appear broken:
 ```bash
 # Disable colors
 kagi --color never query
-
-# Or set environment variable
-export NO_COLOR=1
 ```
 
 ### Rate Limiting
