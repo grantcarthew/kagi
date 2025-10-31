@@ -263,6 +263,8 @@ Report issues: https://github.com/grantcarthew/kagi/issues/new
 
 ### Project Structure
 
+**Design:**
+
 ```
 kagi/
 ├── cmd/
@@ -275,20 +277,45 @@ kagi/
 │   └── config/
 │       └── config.go    # Configuration handling
 ├── main.go              # Entry point
+...
+```
+
+**Actual Implementation (KISS - Flat Structure):**
+
+```
+kagi/
+├── main.go              # All code (types, API, CLI, formatting)
+├── main_test.go         # All tests
 ├── go.mod
 ├── go.sum
 ├── LICENSE              # MPL 2.0
 ├── README.md            # User documentation
-├── design-record.md     # This file
-└── PROJECT.md           # Implementation guide
+├── PROJECT.md           # Implementation guide
+├── ROLE.md              # Role definition
+└── docs/
+    └── design-record.md # This file
 ```
 
+**Rationale for Deviation:**
+Per KISS principles, the entire implementation is ~580 lines in a single `main.go` file. The planned package structure would add unnecessary complexity for this scale. Code will only be split if it exceeds 1000 lines.
+
 ### Exit Codes
+
+**Design:**
 
 - `0`: Success
 - `1`: General error (API, network, parsing)
 - `2`: Invalid arguments/usage
 - `130`: SIGINT (Ctrl+C)
+
+**Actual Implementation (Simplified):**
+
+- `0`: Success
+- `1`: All errors (usage, API, network, parsing)
+- `130`: SIGINT (Ctrl+C)
+
+**Rationale for Deviation:**
+Following KISS, exit code 1 is used for all error conditions. Distinguishing usage errors (2) from other errors adds minimal value but complicates error handling logic.
 
 ### Output Streams
 
@@ -354,34 +381,31 @@ Error: no API key provided
 Provide via --api-key flag or KAGI_API_KEY environment variable
 ```
 
-**Exit code:** 2
+**Exit code:** 1
 
 #### 2. Missing Query
 
 ```
-Error: no query provided
-Usage: kagi [flags] <query...>
+Error: query cannot be empty
 ```
 
-**Exit code:** 2
+**Exit code:** 1
 
 #### 3. Invalid Flag Value
 
 ```
-Error: invalid value "xml" for --format
-Valid formats: text, txt, md, markdown, json
+Error: invalid format 'xml'. Valid formats: text, txt, md, markdown, json
 ```
 
-**Exit code:** 2
+**Exit code:** 1
 
 #### 4. Invalid Timeout
 
 ```
-Error: invalid timeout value "abc"
-Timeout must be a positive integer (seconds)
+Error: timeout must be a positive integer
 ```
 
-**Exit code:** 2
+**Exit code:** 1
 
 #### 5. API Error Response
 
@@ -867,10 +891,43 @@ If KISS principle is relaxed in future versions, consider:
 
 ---
 
+## Implementation Deviations
+
+The following deviations from the original design were made during implementation, all following the KISS principle:
+
+### 1. Flat Project Structure
+
+**Design:** Separate packages (cmd/, internal/api/, internal/format/, internal/config/)
+**Actual:** Single main.go file (~580 lines)
+**Rationale:** Project complexity doesn't justify package separation. All code fits comfortably in one file.
+
+### 2. Simplified Exit Codes
+
+**Design:** Exit code 2 for usage errors, 1 for other errors
+**Actual:** Exit code 1 for all errors
+**Rationale:** Distinguishing usage vs runtime errors adds minimal value but complicates error handling.
+
+### 3. Testing Approach
+
+**Design:** TDD with tests written alongside implementation
+**Actual:** Tests written in Phase 7 after implementation complete
+**Rationale:** Faster development, better understanding of edge cases, avoids test churn.
+
+### 4. Test Coverage
+
+**Achieved:** 48.3% overall, 100% on business logic
+**Analysis:** Untested code is integration/glue code (main, runCobra, loadConfig, queryKagi)
+**Rationale:** Higher coverage requires dependency injection, contradicts KISS for this architecture.
+
+All deviations maintain or improve simplicity while preserving functionality.
+
+---
+
 ## Conclusion
 
 This design record captures all major decisions made during the design phase of the Kagi CLI tool. It serves as the authoritative reference for implementation and future maintenance. Any deviation from these specifications should be documented with rationale in git commit messages and potentially as amendments to this document.
 
 **Design Approved:** 2025-10-31
-**Ready for Implementation:** Yes
-**Next Step:** See PROJECT.md for implementation phases and tasks
+**Implementation Completed:** 2025-10-31 (Phases 1-7)
+**Status:** Production-ready, documentation phase (Phase 8)
+**Next Step:** See PROJECT.md for remaining phases (documentation and distribution)
