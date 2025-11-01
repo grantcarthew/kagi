@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-// TestNormalizeFormat tests the format normalization function
 func TestNormalizeFormat(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -40,7 +39,6 @@ func TestNormalizeFormat(t *testing.T) {
 	}
 }
 
-// TestIsValidFormat tests the format validation function
 func TestIsValidFormat(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -67,7 +65,6 @@ func TestIsValidFormat(t *testing.T) {
 	}
 }
 
-// TestColorize tests the color application function
 func TestColorize(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -123,7 +120,6 @@ func TestColorize(t *testing.T) {
 	}
 }
 
-// TestShouldUseColor tests the color determination logic
 func TestShouldUseColor(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -157,7 +153,6 @@ func TestShouldUseColor(t *testing.T) {
 	})
 }
 
-// Helper function to create test response data
 func createTestResponse() *FastGPTResponse {
 	return &FastGPTResponse{
 		Meta: struct {
@@ -192,7 +187,6 @@ func createTestResponse() *FastGPTResponse {
 	}
 }
 
-// TestFormatText_output tests the text output formatting
 func TestFormatText_output(t *testing.T) {
 	resp := createTestResponse()
 
@@ -207,12 +201,10 @@ func TestFormatText_output(t *testing.T) {
 
 		result := formatText_output(resp, config)
 
-		// Should contain output
 		if !strings.Contains(result, "This is a test response") {
 			t.Errorf("Output missing response text")
 		}
 
-		// Should contain references
 		if !strings.Contains(result, "References:") {
 			t.Errorf("Output missing references section")
 		}
@@ -223,7 +215,6 @@ func TestFormatText_output(t *testing.T) {
 			t.Errorf("Output missing first reference URL")
 		}
 
-		// Should NOT contain heading
 		if strings.Contains(result, "# test query") {
 			t.Errorf("Output should not contain heading when Heading=false")
 		}
@@ -240,12 +231,10 @@ func TestFormatText_output(t *testing.T) {
 
 		result := formatText_output(resp, config)
 
-		// Should contain heading
 		if !strings.Contains(result, "# test query") {
 			t.Errorf("Output missing heading")
 		}
 
-		// Should contain output and references
 		if !strings.Contains(result, "This is a test response") {
 			t.Errorf("Output missing response text")
 		}
@@ -265,12 +254,10 @@ func TestFormatText_output(t *testing.T) {
 
 		result := formatText_output(resp, config)
 
-		// Should contain only the output text
 		if !strings.Contains(result, "This is a test response") {
 			t.Errorf("Output missing response text")
 		}
 
-		// Should NOT contain heading or references
 		if strings.Contains(result, "# test query") {
 			t.Errorf("Quiet mode should not include heading")
 		}
@@ -290,12 +277,10 @@ func TestFormatText_output(t *testing.T) {
 
 		result := formatText_output(resp, config)
 
-		// Should contain ANSI color codes
 		if !strings.Contains(result, "\033[") {
 			t.Errorf("Output should contain ANSI color codes when color=always")
 		}
 
-		// Should still contain the actual content
 		if !strings.Contains(result, "This is a test response") {
 			t.Errorf("Output missing response text")
 		}
@@ -315,19 +300,16 @@ func TestFormatText_output(t *testing.T) {
 
 		result := formatText_output(respNoRefs, config)
 
-		// Should contain output
 		if !strings.Contains(result, "This is a test response") {
 			t.Errorf("Output missing response text")
 		}
 
-		// Should NOT contain references section
 		if strings.Contains(result, "References:") {
 			t.Errorf("Output should not include empty references section")
 		}
 	})
 }
 
-// TestFormatMarkdown_output tests the markdown output formatting
 func TestFormatMarkdown_output(t *testing.T) {
 	resp := createTestResponse()
 
@@ -350,17 +332,14 @@ func TestFormatMarkdown_output(t *testing.T) {
 			t.Errorf("Output missing response text")
 		}
 
-		// Should contain references section
 		if !strings.Contains(result, "## References") {
 			t.Errorf("Output missing references section")
 		}
 
-		// Should contain markdown links
 		if !strings.Contains(result, "[Test Reference 1](https://example.com/1)") {
 			t.Errorf("Output missing markdown link for first reference")
 		}
 
-		// Should contain blockquote snippets
 		if !strings.Contains(result, "> First test snippet") {
 			t.Errorf("Output missing blockquote snippet")
 		}
@@ -375,12 +354,10 @@ func TestFormatMarkdown_output(t *testing.T) {
 
 		result := formatMarkdown_output(resp, config)
 
-		// Should contain only the output text
 		if !strings.Contains(result, "This is a test response") {
 			t.Errorf("Output missing response text")
 		}
 
-		// Should NOT contain heading or references
 		if strings.Contains(result, "# test query") {
 			t.Errorf("Quiet mode should not include heading")
 		}
@@ -401,7 +378,6 @@ func TestFormatMarkdown_output(t *testing.T) {
 
 		result := formatMarkdown_output(respNoRefs, config)
 
-		// Should contain heading and output
 		if !strings.Contains(result, "# test query") {
 			t.Errorf("Output missing heading")
 		}
@@ -409,14 +385,12 @@ func TestFormatMarkdown_output(t *testing.T) {
 			t.Errorf("Output missing response text")
 		}
 
-		// Should NOT contain references section
 		if strings.Contains(result, "## References") {
 			t.Errorf("Output should not include empty references section")
 		}
 	})
 }
 
-// TestFormatJSON_output tests the JSON output formatting
 func TestFormatJSON_output(t *testing.T) {
 	resp := createTestResponse()
 
@@ -432,13 +406,11 @@ func TestFormatJSON_output(t *testing.T) {
 			t.Fatalf("formatJSON_output failed: %v", err)
 		}
 
-		// Should be valid JSON
 		var parsed map[string]interface{}
 		if err := json.Unmarshal([]byte(result), &parsed); err != nil {
 			t.Errorf("Output is not valid JSON: %v", err)
 		}
 
-		// Should contain meta and data sections
 		if _, ok := parsed["meta"]; !ok {
 			t.Errorf("JSON output missing 'meta' field")
 		}
@@ -446,7 +418,6 @@ func TestFormatJSON_output(t *testing.T) {
 			t.Errorf("JSON output missing 'data' field")
 		}
 
-		// Should contain the output text in the JSON
 		if !strings.Contains(result, "This is a test response") {
 			t.Errorf("JSON output missing response text")
 		}
@@ -469,18 +440,15 @@ func TestFormatJSON_output(t *testing.T) {
 			t.Fatalf("formatJSON_output failed: %v", err)
 		}
 
-		// Should be valid JSON string (the output field as JSON)
 		var parsed string
 		if err := json.Unmarshal([]byte(strings.TrimSpace(result)), &parsed); err != nil {
 			t.Errorf("Quiet JSON output is not valid JSON: %v", err)
 		}
 
-		// Should be just the output text
 		if parsed != "This is a test response" {
 			t.Errorf("Quiet JSON output = %q; want %q", parsed, "This is a test response")
 		}
 
-		// Should NOT contain meta or references
 		if strings.Contains(result, "meta") {
 			t.Errorf("Quiet mode should not include meta field")
 		}
@@ -490,7 +458,6 @@ func TestFormatJSON_output(t *testing.T) {
 	})
 }
 
-// TestFormatOutput tests the format dispatcher
 func TestFormatOutput(t *testing.T) {
 	resp := createTestResponse()
 
@@ -541,7 +508,6 @@ func TestFormatOutput(t *testing.T) {
 	}
 }
 
-// TestGetQuery tests the query extraction function
 func TestGetQuery(t *testing.T) {
 	t.Run("single arg query", func(t *testing.T) {
 		args := []string{"test"}
@@ -613,12 +579,9 @@ func TestGetQuery(t *testing.T) {
 	})
 }
 
-// TestQueryKagi_ResponseParsing tests the API client with mock server
 func TestQueryKagi_ResponseParsing(t *testing.T) {
 	t.Run("successful API response", func(t *testing.T) {
-		// Create mock server
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Verify request method and headers
 			if r.Method != http.MethodPost {
 				t.Errorf("Expected POST request, got %s", r.Method)
 			}
@@ -629,7 +592,6 @@ func TestQueryKagi_ResponseParsing(t *testing.T) {
 				t.Errorf("Expected Authorization header with prefix %s", authHeaderPrefix)
 			}
 
-			// Send successful response
 			resp := FastGPTResponse{
 				Meta: struct {
 					ID   string `json:"id"`
@@ -729,7 +691,6 @@ func TestQueryKagi_ResponseParsing(t *testing.T) {
 // To properly unit test the HTTP client, the code would need refactoring to inject the endpoint URL.
 // The current tests verify response/error structures and will be supplemented by integration tests.
 
-// TestEdgeCases tests edge cases and special scenarios
 func TestEdgeCases(t *testing.T) {
 	t.Run("very long query", func(t *testing.T) {
 		// Test with a query longer than 1000 characters
@@ -803,7 +764,6 @@ func TestEdgeCases(t *testing.T) {
 		}
 
 		result := formatText_output(resp, config)
-		// Should handle multiple references gracefully
 		if !strings.Contains(result, "References:") {
 			t.Errorf("Should display references section with many refs")
 		}
@@ -885,7 +845,6 @@ func TestEdgeCases(t *testing.T) {
 		}
 
 		result := formatMarkdown_output(resp, config)
-		// Should handle special markdown chars
 		if !strings.Contains(result, "[Title [with] brackets]") {
 			t.Errorf("Should preserve brackets in markdown links")
 		}
@@ -904,7 +863,6 @@ func TestEdgeCases(t *testing.T) {
 	})
 }
 
-// TestErrorConditions tests various error scenarios
 func TestErrorConditions(t *testing.T) {
 	t.Run("invalid format string", func(t *testing.T) {
 		invalidFormats := []string{"xml", "yaml", "html", "pdf", ""}
@@ -935,7 +893,6 @@ func TestErrorConditions(t *testing.T) {
 			Color:  colorNever,
 		}
 
-		// Should handle empty output gracefully
 		result := formatText_output(resp, config)
 		if result == "" {
 			t.Errorf("Should return some output even with empty response data")
@@ -943,12 +900,10 @@ func TestErrorConditions(t *testing.T) {
 	})
 
 	t.Run("nil config color handling", func(t *testing.T) {
-		// Test default color mode
 		config := &Config{
 			Color: "invalid",
 		}
 		result := shouldUseColor(config)
-		// Should default to false for invalid color mode
 		if result != false {
 			t.Errorf("Invalid color mode should default to no color")
 		}
@@ -974,7 +929,6 @@ func TestErrorConditions(t *testing.T) {
 	})
 }
 
-// TestConfigValidation tests configuration validation logic
 func TestConfigValidation(t *testing.T) {
 	t.Run("timeout validation", func(t *testing.T) {
 		// Note: This would require calling loadConfig which uses global flags
@@ -989,7 +943,6 @@ func TestConfigValidation(t *testing.T) {
 		validModes := []string{colorAuto, colorAlways, colorNever}
 		for _, mode := range validModes {
 			config := &Config{Color: mode}
-			// Should not panic
 			_ = shouldUseColor(config)
 		}
 	})
