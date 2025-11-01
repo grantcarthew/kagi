@@ -427,7 +427,10 @@ func TestFormatJSON_output(t *testing.T) {
 			Quiet:  false,
 		}
 
-		result := formatJSON_output(resp, config)
+		result, err := formatJSON_output(resp, config)
+		if err != nil {
+			t.Fatalf("formatJSON_output failed: %v", err)
+		}
 
 		// Should be valid JSON
 		var parsed map[string]interface{}
@@ -461,7 +464,10 @@ func TestFormatJSON_output(t *testing.T) {
 			Quiet:  true,
 		}
 
-		result := formatJSON_output(resp, config)
+		result, err := formatJSON_output(resp, config)
+		if err != nil {
+			t.Fatalf("formatJSON_output failed: %v", err)
+		}
 
 		// Should be valid JSON string (the output field as JSON)
 		var parsed string
@@ -489,9 +495,9 @@ func TestFormatOutput(t *testing.T) {
 	resp := createTestResponse()
 
 	tests := []struct {
-		name           string
-		format         string
-		shouldContain  string
+		name             string
+		format           string
+		shouldContain    string
 		shouldNotContain string
 	}{
 		{
@@ -520,7 +526,10 @@ func TestFormatOutput(t *testing.T) {
 				Color:  colorNever,
 			}
 
-			result := formatOutput(resp, config)
+			result, err := formatOutput(resp, config)
+			if err != nil {
+				t.Fatalf("formatOutput failed: %v", err)
+			}
 
 			if tt.shouldContain != "" && !strings.Contains(result, tt.shouldContain) {
 				t.Errorf("Output missing expected content: %q", tt.shouldContain)
@@ -852,7 +861,10 @@ func TestEdgeCases(t *testing.T) {
 			Quiet:  false,
 		}
 
-		result := formatJSON_output(resp, config)
+		result, err := formatJSON_output(resp, config)
+		if err != nil {
+			t.Fatalf("formatJSON_output failed: %v", err)
+		}
 		// Should be valid JSON
 		var parsed map[string]interface{}
 		if err := json.Unmarshal([]byte(result), &parsed); err != nil {
@@ -911,8 +923,8 @@ func TestErrorConditions(t *testing.T) {
 				Tokens     int         `json:"tokens"`
 				References []Reference `json:"references"`
 			}{
-				Output: "",
-				Tokens: 0,
+				Output:     "",
+				Tokens:     0,
 				References: []Reference{},
 			},
 		}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -35,10 +36,9 @@ const (
 	cacheEnabled     = true
 
 	// Exit codes
-	exitSuccess    = 0
-	exitError      = 1
-	exitUsageError = 2
-	exitInterrupt  = 130
+	exitSuccess   = 0
+	exitError     = 1
+	exitInterrupt = 130
 
 	// Output formats
 	formatText     = "text"
@@ -239,7 +239,10 @@ func runCobra(cmd *cobra.Command, args []string) error {
 	}
 
 	// Format and output the response
-	output := formatOutput(resp, config)
+	output, err := formatOutput(resp, config)
+	if err != nil {
+		return err
+	}
 	fmt.Print(output)
 
 	return nil
@@ -345,12 +348,12 @@ func isValidFormat(format string) bool {
 
 // ANSI color codes
 const (
-	ansiReset      = "\033[0m"
-	ansiBold       = "\033[1m"
-	ansiBlue       = "\033[34m"
-	ansiBoldBlue   = "\033[1;34m"
-	ansiCyan       = "\033[36m"
-	ansiYellow     = "\033[33m"
+	ansiReset    = "\033[0m"
+	ansiBold     = "\033[1m"
+	ansiBlue     = "\033[34m"
+	ansiBoldBlue = "\033[1;34m"
+	ansiCyan     = "\033[36m"
+	ansiYellow   = "\033[33m"
 )
 
 // shouldUseColor determines if color output should be used
@@ -377,14 +380,14 @@ func colorize(text, colorCode string, useColor bool) string {
 }
 
 // formatOutput formats the API response based on configuration
-func formatOutput(resp *FastGPTResponse, config *Config) string {
+func formatOutput(resp *FastGPTResponse, config *Config) (string, error) {
 	switch config.Format {
 	case formatJSON:
 		return formatJSON_output(resp, config)
 	case formatMarkdown:
-		return formatMarkdown_output(resp, config)
+		return formatMarkdown_output(resp, config), nil
 	default: // formatText
-		return formatText_output(resp, config)
+		return formatText_output(resp, config), nil
 	}
 }
 
@@ -476,21 +479,27 @@ func formatMarkdown_output(resp *FastGPTResponse, config *Config) string {
 }
 
 // formatJSON_output formats the response as JSON
-func formatJSON_output(resp *FastGPTResponse, config *Config) string {
+func formatJSON_output(resp *FastGPTResponse, config *Config) (string, error) {
 	// Quiet mode: just return the output field as JSON string
 	if config.Quiet {
-		jsonBytes, _ := json.MarshalIndent(resp.Data.Output, "", "  ")
-		return string(jsonBytes) + "\n"
+		jsonBytes, err := json.MarshalIndent(resp.Data.Output, "", "  ")
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal output to JSON: %w", err)
+		}
+		return string(jsonBytes) + "\n", nil
 	}
 
 	// Full response as pretty JSON
 	jsonBytes, err := json.MarshalIndent(resp, "", "  ")
 	if err != nil {
 		// Fallback to non-indented if pretty print fails
-		jsonBytes, _ = json.Marshal(resp)
+		jsonBytes, err = json.Marshal(resp)
+		if err != nil {
+			return "", fmt.Errorf("failed to marshal response to JSON: %w", err)
+		}
 	}
 
-	return string(jsonBytes) + "\n"
+	return string(jsonBytes) + "\n", nil
 }
 
 // queryKagi sends a query to the Kagi FastGPT API and returns the response
@@ -525,7 +534,7 @@ func queryKagi(apiKey, query string, timeout int) (*FastGPTResponse, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		// Check if it's a timeout error
-		if ctx.Err() == context.DeadlineExceeded {
+		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return nil, fmt.Errorf("request timeout exceeded (%ds)", timeout)
 		}
 		return nil, fmt.Errorf("network request failed: %w", err)
