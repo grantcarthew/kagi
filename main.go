@@ -61,6 +61,7 @@ DESCRIPTION:
   with web context. Designed for both human users and AI agents.
 
   Output formats: text (default), markdown (md), or JSON.
+
   API key: Set KAGI_API_KEY environment variable or use --api-key flag.
 
 EXAMPLES:
@@ -76,10 +77,10 @@ EXAMPLES:
 
   # With options
   kagi --heading --timeout 60 golang generics
-  kagi -q golang channels              # Quiet mode (output only)
+  kagi -q golang channels              # Quiet mode (output body only)
 
 OPTIONS:
-  -f, --format string      Output format: text | txt | md | markdown | json (default "text")
+  -f, --format string      Output format: text (txt) | md (markdown) | json (default "text")
   -q, --quiet              Output only response body (no heading or references)
       --heading            Include query as heading in text format
   -t, --timeout int        HTTP request timeout in seconds (default 30)

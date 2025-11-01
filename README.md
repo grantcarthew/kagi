@@ -9,7 +9,6 @@ A fast, simple command-line interface for [Kagi FastGPT](https://kagi.com/fastgp
 - **Smart Color Output**: Automatically detects terminals and pipes
 - **Web References**: Includes sources with every response
 - **Flexible Input**: Accept queries from arguments or stdin
-- **Production Ready**: Comprehensive error handling and timeout controls
 - **AI Agent Friendly**: Clean output formats for automation
 
 ## Installation
@@ -399,14 +398,19 @@ go test -v ./...
 
 ```
 kagi/
-├── main.go          # All code (types, API client, CLI, formatting)
-├── main_test.go     # Comprehensive test suite (83 tests)
-├── go.mod           # Go module definition
-├── go.sum           # Dependency checksums
-├── LICENSE          # Mozilla Public License 2.0
-├── README.md        # This file
-├── PROJECT.md       # Development guide
-└── ROLE.md          # Role definition
+├── AGENTS.md          # AI agent context and development guide
+├── CHANGELOG.md       # Version history and changes
+├── CODE_OF_CONDUCT.md # Community guidelines
+├── CONTRIBUTING.md    # Contribution guidelines
+├── LICENSE            # Mozilla Public License 2.0
+├── README.md          # This file
+├── ROLE.md            # Role definition for AI agents
+├── docs/              # Design decisions and task documentation
+├── go.mod             # Go module definition
+├── go.sum             # Dependency checksums
+├── main.go            # All code (types, API client, CLI, formatting)
+├── main_test.go       # Comprehensive test suite (83 tests)
+└── test-interactive   # Interactive CLI testing script
 ```
 
 The project follows the KISS principle with a flat structure - all code in a single `main.go` file.
