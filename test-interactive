@@ -1,0 +1,281 @@
+#!/usr/bin/env bash
+
+# Copyright (c) 2025 Grant Carthew
+#
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+# Interactive Testing Script for Kagi
+# Tests various CLI features and output formats interactively
+
+# Environment setup
+# -----------------------------------------------------------------------------
+set -o pipefail
+[[ ${DEBUG-} ]] && set -o xtrace
+
+SCRIPT_DIR="$(cd "${BASH_SOURCE[0]%/*}" || exit 1; pwd)"
+
+# ANSI color codes
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly BOLD='\033[1m'
+readonly RESET='\033[0m'
+
+# Embedded logging functions
+# -----------------------------------------------------------------------------
+function log_line() {
+    local char="${1:-─}"
+    local length="${2:-80}"
+    printf "${char}%.0s" $(seq 1 "${length}") >&2
+    echo >&2
+}
+
+function log_title() {
+    echo >&2
+    log_line "═" 80
+    echo -e "${BOLD}${GREEN}${1}${RESET}" >&2
+    log_line "═" 80
+}
+
+function log_heading() {
+    echo >&2
+    echo -e "${BOLD}${GREEN}${1}${RESET}" >&2
+    log_line "─" "${#1}"
+}
+
+function log_message() {
+    echo -e "${1}" >&2
+}
+
+function log_success() {
+    echo -e "${GREEN}✔${RESET} ${1}" >&2
+}
+
+function log_failure() {
+    echo -e "${RED}✖${RESET} ${1}" >&2
+}
+
+function log_error() {
+    echo -e "${RED}${1}${RESET}" >&2
+}
+
+function log_warning() {
+    echo -e "${YELLOW}${1}${RESET}" >&2
+}
+
+function log_info() {
+    echo -e "${BLUE}${1}${RESET}" >&2
+}
+
+function log_pressanykey() {
+    echo -e "${YELLOW}Press any key to continue...${RESET}" >&2
+    read -n 1 -s -r || true
+    echo >&2
+}
+
+function ctrlc_trap() {
+    echo >&2
+    log_warning "Testing interrupted. Exiting."
+    exit 130
+}
+trap ctrlc_trap SIGINT
+
+# Dependency checks
+# -----------------------------------------------------------------------------
+dependencies=(go)
+for cmd in "${dependencies[@]}"; do
+    if ! command -v "${cmd}" >/dev/null; then
+        log_error "ERROR: Missing dependency - '${cmd}'"
+        exit 1
+    fi
+done
+
+# Test definitions
+# Each test has: description|verify_type|command
+# verify_type: success (exit 0), error (exit non-zero), json (valid JSON output)
+# -----------------------------------------------------------------------------
+declare -a tests=(
+    # Basic functionality
+    "Basic query|success|./kagi 'golang best practices'"
+    "Query with heading|success|./kagi --heading 'golang best practices'"
+    "Quiet mode (output only)|success|./kagi -q 'golang best practices'"
+
+    # Output formats
+    "Markdown format|success|./kagi -f md 'golang best practices'"
+    "JSON format|json|./kagi -f json 'golang best practices'"
+    "Text format (explicit)|success|./kagi -f text 'golang best practices'"
+
+    # Case-insensitive formats
+    "Format uppercase MD|success|./kagi -f MD 'golang best practices'"
+    "Format uppercase JSON|json|./kagi -f JSON 'golang best practices'"
+    "Format uppercase TEXT|success|./kagi -f TEXT 'golang best practices'"
+    "Format mixed case Markdown|success|./kagi -f Markdown 'golang best practices'"
+
+    # Stdin input
+    "Stdin query|success|echo 'golang best practices' | ./kagi"
+    "Stdin quiet mode|success|echo 'golang best practices' | ./kagi -q"
+
+    # Color modes
+    "Color auto (default)|success|./kagi --color auto 'golang best practices'"
+    "Color always|success|./kagi --color always 'golang best practices'"
+    "Color never|success|./kagi --color never 'golang best practices'"
+
+    # Timeout
+    "Custom timeout|success|./kagi --timeout 60 'golang best practices'"
+
+    # Verbose/debug
+    "Verbose mode|success|./kagi --verbose 'golang best practices'"
+    "Debug mode|success|./kagi --debug 'golang best practices'"
+
+    # Combined options
+    "Markdown + heading|success|./kagi -f md --heading 'golang best practices'"
+    "JSON + quiet|json|./kagi -f json -q 'golang best practices'"
+
+    # Help and version
+    "Help message|success|./kagi --help"
+    "Version info|success|./kagi --version"
+
+    # Error cases
+    "Invalid format|error|./kagi -f invalid 'golang best practices'"
+    "No query provided|error|./kagi"
+    "Missing API key|error|KAGI_API_KEY= ./kagi 'golang best practices'"
+)
+
+# Main script
+# -----------------------------------------------------------------------------
+log_title "Kagi Interactive Testing Suite"
+
+# Verify API key is set
+if [[ -z "${KAGI_API_KEY:-}" ]]; then
+    log_error "ERROR: KAGI_API_KEY environment variable not set"
+    log_message "Please set your API key: export KAGI_API_KEY='your-key-here'"
+    exit 1
+fi
+log_success "API key found (${KAGI_API_KEY:0:3}...)"
+
+# Build kagi
+log_heading "Building Kagi"
+if ! go build -o kagi; then
+    log_failure "Failed to build kagi"
+    exit 1
+fi
+log_success "Built kagi binary successfully"
+
+# Create temp directory
+log_heading "Test Environment Setup"
+TEST_DIR=$(mktemp -d -t kagi-test-XXXXXX)
+log_message "Created temporary test directory: ${TEST_DIR}"
+KAGI_BIN="${SCRIPT_DIR}/kagi"
+
+# Copy kagi binary to temp dir
+cp "${KAGI_BIN}" "${TEST_DIR}/kagi"
+cd "${TEST_DIR}" || exit 1
+log_success "Working directory: ${TEST_DIR}"
+
+# Run tests
+test_count=0
+passed_count=0
+failed_count=0
+
+log_heading "Starting Test Execution"
+log_message "Total tests to run: ${#tests[@]}"
+echo >&2
+
+for test_line in "${tests[@]}"; do
+    IFS='|' read -r description verify command <<< "${test_line}"
+    ((test_count++))
+
+    log_heading "Test ${test_count}/${#tests[@]}: ${description}"
+    log_message "Working directory: $(pwd)"
+    log_line "─" 40
+    echo >&2
+    log_message "${BLUE}${command}${RESET}"
+    echo >&2
+
+    # Run the command
+    set +e
+    output=$(eval "${command}" 2>&1)
+    exit_code=$?
+    # Keep set +e - don't re-enable exit on error
+
+    # Display output
+    if [[ -n "${output}" ]]; then
+        echo "${output}"
+    fi
+    echo >&2
+    log_line "─" 40
+
+    # Verify result based on verify type
+    case "${verify}" in
+        "success")
+            if [[ ${exit_code} -eq 0 ]]; then
+                log_success "Command succeeded (exit code: 0)"
+                ((passed_count++))
+            else
+                log_failure "Command failed (exit code: ${exit_code})"
+                ((failed_count++))
+            fi
+            ;;
+
+        "error")
+            if [[ ${exit_code} -ne 0 ]]; then
+                log_success "Expected error occurred (exit code: ${exit_code})"
+                ((passed_count++))
+            else
+                log_failure "Expected error but command succeeded"
+                ((failed_count++))
+            fi
+            ;;
+
+        "json")
+            if [[ ${exit_code} -eq 0 ]]; then
+                # Verify JSON is valid
+                if echo "${output}" | jq empty 2>/dev/null; then
+                    log_success "Command succeeded with valid JSON output"
+                    ((passed_count++))
+                else
+                    log_failure "Command succeeded but output is not valid JSON"
+                    ((failed_count++))
+                fi
+            else
+                log_failure "Command failed (exit code: ${exit_code})"
+                ((failed_count++))
+            fi
+            ;;
+
+        *)
+            log_warning "Unknown verify type: ${verify}"
+            log_message "Command exit code: ${exit_code}"
+            ;;
+    esac
+
+    echo >&2
+    log_pressanykey
+done
+
+# Summary
+log_title "Test Summary"
+log_message "Total tests: ${test_count}"
+log_success "Passed: ${passed_count}"
+if [[ ${failed_count} -gt 0 ]]; then
+    log_failure "Failed: ${failed_count}"
+fi
+
+# Cleanup prompt
+echo >&2
+log_heading "Cleanup"
+log_message "Test directory: ${TEST_DIR}"
+read -p "Keep test directory? [Y/n]: " -n 1 -r
+echo >&2
+if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ ! -z $REPLY ]]; then
+    log_message "Removing test directory..."
+    rm -rf "${TEST_DIR}"
+    log_success "Cleaned up test directory"
+else
+    log_success "Test directory preserved: ${TEST_DIR}"
+fi
+
+log_success "Testing complete!"
