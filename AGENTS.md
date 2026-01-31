@@ -1,15 +1,15 @@
-# AGENTS.md
+# Kagi FastGPT CLI
 
-This is a command-line interface for querying the Kagi FastGPT API, built in Go following the KISS (Keep It Simple, Stupid) principle. All code lives in a single `main.go` file for simplicity.
+A command-line interface for querying the Kagi FastGPT API, built in Go following the KISS (Keep It Simple, Stupid) principle. All code lives in a single `main.go` file for simplicity.
 
 ## Project Overview
 
 A fast, production-ready CLI tool that queries Kagi's FastGPT API and returns AI-powered search results with web context. Designed for both human users and AI agents with multiple output formats (text, markdown, JSON).
 
-**Repository:** github.com/grantcarthew/kagi
-**Language:** Go 1.25.3
-**License:** Mozilla Public License 2.0
-**Architecture:** Single-file design (main.go) with comprehensive test coverage
+Repository: github.com/grantcarthew/kagi
+Language: Go 1.25.3
+License: Mozilla Public License 2.0
+Architecture: Single-file design (main.go) with comprehensive test coverage
 
 ## Setup Commands
 
@@ -61,24 +61,24 @@ go vet ./...
 
 ### Go Conventions
 
-- **Formatting:** Use `gofmt` for all code (standard Go formatting)
-- **Linting:** Follow `golint` recommendations
-- **Naming:** Use camelCase for unexported, PascalCase for exported identifiers
-- **Comments:** Document all exported functions, types, and constants
-- **Error handling:** Return errors explicitly, don't panic except for unrecoverable situations
+- Formatting: Use `gofmt` for all code (standard Go formatting)
+- Linting: Follow `golint` recommendations
+- Naming: Use camelCase for unexported, PascalCase for exported identifiers
+- Comments: Document all exported functions, types, and constants
+- Error handling: Return errors explicitly, don't panic except for unrecoverable situations
 
 ### Project-Specific Standards
 
-1. **Single-file architecture:** All code stays in `main.go` (KISS principle)
-2. **Constants at top:** Define all constants in the const block after imports
-3. **Type definitions:** Group related types together
-4. **Function organization:**
+1. Single-file architecture: All code stays in `main.go` (KISS principle)
+2. Constants at top: Define all constants in the const block after imports
+3. Type definitions: Group related types together
+4. Function organization:
    - Main and CLI setup functions first
    - API client functions
    - Formatting/output functions
    - Utility functions last
-5. **Test naming:** `Test<FunctionName>` for unit tests, `Test<Scenario>` for integration tests
-6. **No external dependencies** except:
+5. Test naming: `Test<FunctionName>` for unit tests, `Test<Scenario>` for integration tests
+6. No external dependencies except:
    - `github.com/spf13/cobra` (CLI framework)
    - `golang.org/x/term` (terminal detection)
    - Standard library
@@ -214,10 +214,10 @@ Examples:
 
 ### Kagi FastGPT API
 
-- **Endpoint:** `https://kagi.com/api/v0/fastgpt`
-- **Authentication:** Bearer token via `Authorization` header
-- **Method:** POST
-- **Content-Type:** `application/json`
+- Endpoint: `https://kagi.com/api/v0/fastgpt`
+- Authentication: Bearer token via `Authorization` header
+- Method: POST
+- Content-Type: `application/json`
 
 ### Request Structure
 
@@ -305,11 +305,11 @@ Examples:
 
 ### Color Usage
 
-- **Blue:** Headings and section titles
-- **Cyan:** URLs and links
-- **Yellow:** Reference numbers
-- **Green:** Success messages (verbose mode)
-- **Red:** Error messages
+- Blue: Headings and section titles
+- Cyan: URLs and links
+- Yellow: Reference numbers
+- Green: Success messages (verbose mode)
+- Red: Error messages
 
 ## Security Considerations
 
@@ -373,38 +373,38 @@ Examples:
 
 ### Build Issues
 
-**Issue:** `go build` fails with dependency errors
-**Solution:** Run `go mod tidy` then `go build`
+Issue: `go build` fails with dependency errors
+Solution: Run `go mod tidy` then `go build`
 
-**Issue:** Version not set in binary
-**Solution:** Use build flag: `go build -ldflags="-X main.version=1.0.0"`
+Issue: Version not set in binary
+Solution: Use build flag: `go build -ldflags="-X main.version=1.0.0"`
 
 ### Test Issues
 
-**Issue:** Tests fail with "connection refused"
-**Solution:** Tests use mock HTTP server, ensure no network required. Check test setup.
+Issue: Tests fail with "connection refused"
+Solution: Tests use mock HTTP server, ensure no network required. Check test setup.
 
-**Issue:** Tests fail on color output
-**Solution:** Color tests may behave differently in CI. Check terminal detection logic.
+Issue: Tests fail on color output
+Solution: Color tests may behave differently in CI. Check terminal detection logic.
 
 ### Runtime Issues
 
-**Issue:** "API key required" error
-**Solution:** Set `export KAGI_API_KEY='your-key'` or use `--api-key` flag
+Issue: "API key required" error
+Solution: Set `export KAGI_API_KEY='your-key'` or use `--api-key` flag
 
-**Issue:** Timeout errors on complex queries
-**Solution:** Increase timeout: `kagi --timeout 60 "your query"`
+Issue: Timeout errors on complex queries
+Solution: Increase timeout: `kagi --timeout 60 "your query"`
 
-**Issue:** Colors broken in output
-**Solution:** Use `--color never`
+Issue: Colors broken in output
+Solution: Use `--color never`
 
 ### Development Issues
 
-**Issue:** Code formatting doesn't match style
-**Solution:** Run `gofmt -w .` before committing
+Issue: Code formatting doesn't match style
+Solution: Run `gofmt -w .` before committing
 
-**Issue:** Tests pass locally but fail in PR
-**Solution:** Ensure no environment-specific dependencies (check API key handling)
+Issue: Tests pass locally but fail in PR
+Solution: Ensure no environment-specific dependencies (check API key handling)
 
 ## Project Structure
 
@@ -419,11 +419,15 @@ kagi/
 ├── CHANGELOG.md         # Version history and changes
 ├── ROLE.md              # Role definition for AI agents
 ├── AGENTS.md            # This file
-├── docs/
-│   ├── design-record.md # Architectural decisions and specifications
-│   └── tasks/           # Development task tracking
-└── reference/
-    └── homebrew-tap/    # Homebrew formula for distribution
+├── CODE_OF_CONDUCT.md   # Community guidelines
+├── CONTRIBUTING.md      # Contribution guidelines
+├── test-interactive     # Interactive CLI testing script
+├── .ai/                 # AI agent workflow structure
+├── .github/             # GitHub templates and funding
+└── docs/
+    ├── design-record.md # Architectural decisions and specifications
+    ├── tasks/           # Development task tracking
+    └── archive/         # Historical design documents
 ```
 
 ## Distribution
@@ -435,8 +439,6 @@ The project is distributed via Homebrew tap:
 ```bash
 brew install grantcarthew/tap/kagi
 ```
-
-Formula location: `reference/homebrew-tap/`
 
 ### Go Install
 
@@ -456,14 +458,14 @@ go build
 
 ## Design Philosophy
 
-This project follows the **KISS principle** (Keep It Simple, Stupid):
+This project follows the KISS principle (Keep It Simple, Stupid):
 
-1. **Single-file architecture:** All code in `main.go` for simplicity
-2. **Minimal dependencies:** Only essential external packages
-3. **Clear structure:** Logical organization within the single file
-4. **Comprehensive tests:** High coverage in a single test file
-5. **Straightforward API:** Simple request/response with Kagi
-6. **Clean output:** Multiple formats for different use cases
+1. Single-file architecture: All code in `main.go` for simplicity
+2. Minimal dependencies: Only essential external packages
+3. Clear structure: Logical organization within the single file
+4. Comprehensive tests: High coverage in a single test file
+5. Straightforward API: Simple request/response with Kagi
+6. Clean output: Multiple formats for different use cases
 
 When making changes, always ask: "Is this adding necessary complexity, or can it be simpler?"
 
@@ -491,8 +493,8 @@ gofmt -w .
 
 ## Resources
 
-- **Kagi API Documentation:** https://help.kagi.com/kagi/api/fastgpt.html
-- **Cobra Documentation:** https://github.com/spf13/cobra
-- **Go Style Guide:** https://go.dev/doc/effective_go
-- **Project Design Record:** docs/design-record.md
-- **GitHub Repository:** https://github.com/grantcarthew/kagi
+- Kagi API Documentation: https://help.kagi.com/kagi/api/fastgpt.html
+- Cobra Documentation: https://github.com/spf13/cobra
+- Go Style Guide: https://go.dev/doc/effective_go
+- Project Design Record: docs/design-record.md
+- GitHub Repository: https://github.com/grantcarthew/kagi
